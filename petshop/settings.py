@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-ayojps-$dl1g#$#*ufj&op-2zjf5^9^q$r=ghc+k!#tm=&!35(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['gowest-petshop.onrender.com/','127.0.0.1']
+ALLOWED_HOSTS = ['gowest-petshop.onrender.com','127.0.0.1']
 
 
 # Application definition
