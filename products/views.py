@@ -1,10 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db import transaction, IntegrityError
+from django.db import transaction, IntegrityError, models
 from django.contrib import messages 
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import ProductForm
-from .models import Product
+from .models import Product , Category, Brand
+
 
 
 def index(request):
@@ -22,16 +24,63 @@ def index(request):
 def is_staff_user(user):
     return user.is_staff
 
+
+# ==============================================
+
 # Gestión de Productos
 
 # Lista de productos
 
 def product_list(request):
     products = Product.objects.filter(is_active=True)
-    # Obtener parámetro de sorting
-    sort = request.GET.get('sort', 'name')  # Por defecto ordenar por nombre
     
-    # Aplicar ordenamiento
+    # BÚSQUEDA (query de texto)
+    query = request.GET.get('q', '').strip()
+    if query:
+        products = products.filter(
+            models.Q(name__icontains=query) |
+            models.Q(description__icontains=query) |
+            models.Q(category__name__icontains=query) |
+            models.Q(brand__name__icontains=query) |
+            models.Q(sku__icontains=query)
+        )
+    
+    # FILTRO: Categoría
+    category_ids = request.GET.getlist('category')
+    if category_ids:
+        products = products.filter(category_id__in=category_ids)
+    
+    # FILTRO: Marca
+    brand_ids = request.GET.getlist('brand')
+    if brand_ids:
+        products = products.filter(brand_id__in=brand_ids)
+
+    # FILTRO: Rango de precio
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    # FILTRO: Solo en oferta
+    if request.GET.get('featured') == '1':
+        products = products.filter(is_featured=True)
+        
+    # FILTRO: Solo destacados
+    if request.GET.get('featured') == '1':
+        products = products.filter(is_featured=True)
+    
+    # FILTRO: Con stock
+    if request.GET.get('in_stock') == '1':
+        products = products.filter(stock__gt=0)
+    
+    # Aplicar select_related para optimizar
+    products = products.select_related('category', 'brand').distinct()
+    
+    # Sorting
+
+    sort = request.GET.get('sort', 'name')
     if sort == 'price_low':
         products = products.order_by('price')
     elif sort == 'price_high':
@@ -40,13 +89,61 @@ def product_list(request):
         products = products.order_by('name')
     elif sort == 'newest':
         products = products.order_by('-created_at')
-    else:
-        products = products.order_by('name')
+
+    # Paginación
+    paginator = Paginator(products, 12)  # 12 productos por página
+    page = request.GET.get('page')
     
-    return render(request, 'products/product_list.html', {
-        'products': products,
-        'current_sort': sort  # Pasar el ordenamiento actual al template
-    })
+    try:
+        products_page = paginator.page(page)
+    except PageNotAnInteger:
+        # Si page no es un entero, mostrar la primera página
+        products_page = paginator.page(1)
+    except EmptyPage:
+        # Si page está fuera de rango, mostrar la última página
+        products_page = paginator.page(paginator.num_pages)
+    
+    
+    # Obtener datos para los filtros (sidebar)
+    categories = Category.objects.filter(is_active=True)
+    brands = Brand.objects.filter(is_active=True)
+    
+    # Calcular rango de precios
+    price_range = Product.objects.filter(is_active=True).aggregate(
+        min_price=models.Min('price'),
+        max_price=models.Max('price')
+    )
+    
+    # Mensajes
+    if query and not products.exists():
+        messages.info(request, f'No se encontraron productos para "{query}"')
+    
+    context = {
+        'products': products_page,
+        'query': query,
+        'current_sort': sort,
+        'total_results': paginator.count, 
+        
+        # Para filtros
+        'categories': categories,
+        'brands': brands,
+        'price_range': price_range,
+        
+        # Filtros activos (para mantener estado)
+        'selected_categories': category_ids,
+        'selected_brands': brand_ids,
+        'min_price': min_price,
+        'max_price': max_price,
+        'filter_on_sale': request.GET.get('on_sale'),
+        'filter_featured': request.GET.get('featured'),
+        'filter_in_stock': request.GET.get('in_stock'),
+
+        # Paginación
+        'paginator': paginator,
+    }
+    
+    return render(request, 'products/product_list.html', context)
+
 
 # Detalle del producto
 def product_detail(request, pk):
@@ -137,6 +234,53 @@ def product_confirm_delete(request, pk):
 
     return render(request, 'products/product_confirm_delete.html', {'product': product})
 
+# ==============================================
+
+# Barra de búsqueda
+
+""" def product_search(request):
+    # Obtener parámetro de búsqueda
+    query = request.GET.get('q', '').strip()
+    products = Product.objects.none()  # QuerySet vacío por defecto
+    
+    if query:
+        # Búsqueda en múltiples campos
+        products = Product.objects.filter(
+            is_active=True
+        ).filter(
+            models.Q(name__icontains=query) |
+            models.Q(description__icontains=query) |
+            models.Q(category__name__icontains=query) |
+            models.Q(brand__name__icontains=query) |
+            models.Q(sku__icontains=query)
+        ).select_related('category', 'brand').distinct()
+        
+        # Mensaje si no hay resultados
+        if not products.exists():
+            messages.info(request, f'No se encontraron productos para "{query}"')
+    
+    # Aplicar ordenamiento si se especifica
+    sort = request.GET.get('sort', 'name')
+    if sort == 'price_low':
+        products = products.order_by('price')
+    elif sort == 'price_high':
+        products = products.order_by('-price')
+    elif sort == 'name':
+        products = products.order_by('name')
+    elif sort == 'newest':
+        products = products.order_by('-created_at')
+    
+    return render(request, 'products/product_search.html', {
+        'products': products,
+        'query': query,
+        'current_sort': sort,
+        'total_results': products.count()
+    })
+ """
+
+
+
+# ==============================================
 
 # Carrito de Compras
 

@@ -7,7 +7,7 @@
     <title>{% block title %}GoWest - Tienda de Mascotas{% endblock %}</title>
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <!-- Bootstrap CSS (CDN) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-
+<body>
     <!-- Nav Bar -->
 
     <nav class="navbar navbar-expand-lg navbar-light shadow">
@@ -52,14 +52,25 @@
                         {% endif %}
                     </ul>
                 </div>
+
                 <div class="navbar align-self-center d-flex">
 
-                    <!-- Search Icon (Para escalado a futuro) -->
+                    <!-- Barra de Búsqueda -->
+                    <form method="GET" action="{% url 'products:lista_productos' %}" class="d-flex me-3" role="search">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <input 
+                                type="search" 
+                                name="q" 
+                                class="form-control" 
+                                placeholder="Buscar productos..." 
+                                value="{{ request.GET.q }}"
+                                minlength="2">
+                            <button class="btn btn-outline-success" type="submit">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </form>  
 
-                    <!-- <a class="nav-icon position-relative text-decoration-none" href="#">
-                        <i class="fa fa-fw fa-search text-dark mr-2"></i>
-                    </a> -->
-                    
                     <!-- Carrito -->
                     <a class="nav-icon position-relative text-decoration-none" href="{% url 'products:cart_view' %}">
                         <i class="fa fa-fw fa-cart-arrow-down text-dark mr-2"></i>
@@ -142,6 +153,10 @@
         {% block content %}
         {% endblock %}
     </main>
+
+    <!-- Modals -->
+    {% block modals %}
+    {% endblock %}
 
     <!-- Footer -->
 
@@ -252,10 +267,11 @@
 
 
     <!-- Scripts -->
+
+    <!-- Bootstrap Bundle with Popper (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery (CDN) -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- Bootstrap Bundle with Popper (CDN) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}

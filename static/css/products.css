@@ -119,6 +119,107 @@
     width: 20px;
 }
 
+/* Sidebar de Filtros */
+
+/* static/css/products.css - AGREGAR AL FINAL */
+
+/* Sidebar de Filtros */
+.filter-sidebar {
+    background: #fff;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 100px;
+}
+
+.filter-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.filter-options {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.filter-options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.filter-options::-webkit-scrollbar-thumb {
+    background: #59ab6e;
+    border-radius: 3px;
+}
+
+.form-check {
+    padding: 0.5rem 0;
+}
+
+.form-check-label {
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.form-check-input:checked {
+    background-color: #59ab6e;
+    border-color: #59ab6e;
+}
+
+/* Botones de collapse de filtros */
+.filter-section .btn {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.filter-section .btn:hover {
+    background-color: #f8f9fa;
+}
+
+.filter-section .collapse {
+    padding: 0 0.5rem;
+}
+
+/* Checkboxes seleccionados con estilo verde */
+.form-check-input:checked {
+    background-color: #59ab6e;
+    border-color: #59ab6e;
+}
+
+.form-check-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+
+/* Paginación */
+.pagination .page-link {
+    color: #59ab6e;
+}
+
+.pagination .page-link:hover {
+    color: #fff;
+    background-color: #59ab6e;
+    border-color: #59ab6e;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #59ab6e !important;
+    border-color: #59ab6e !important;
+    color: #fff !important;
+}
+
+.pagination .page-item.active .page-link:hover {
+    background-color: #59ab6e !important;
+    border-color: #59ab6e !important;
+    color: #fff !important;
+    cursor: default;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+}
 
 /* Empty State */
 .empty-state {
@@ -292,4 +393,12 @@
         max-height: 300px;
     }
 
+}
+
+@media (max-width: 991px) {
+    .filter-sidebar {
+        position: relative;
+        top: 0;
+        margin-bottom: 2rem;
+    }
 }

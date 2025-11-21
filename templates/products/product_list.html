@@ -38,24 +38,305 @@
 <!-- Seccion de Productos -->
 
 <section class="py-5">
-    <div class="container">
-        <div class="row">
+    <div class="container-fluid">
+        <div class="row mx-lg-5 mx-2">
+
+
+            <!-- Botón Filtros (Móvil) -->
+            <div class="col-12 mb-3 d-lg-none">
+                <button class="btn btn-outline-success w-100" type="button" data-bs-toggle="modal" data-bs-target="#filterModal">
+                    <i class="fas fa-filter me-2"></i>Filtros
+                    {% if selected_categories or selected_brands or min_price or max_price or filter_on_sale or filter_featured or filter_in_stock %}
+                    <span class="badge bg-success ms-2">Activos</span>
+                    {% endif %}
+                </button>
+            </div>
             
-            <!-- Barra para filtros / Opcion para escalado -->
-            <!-- <div class="col-lg-3">
+            <!-- Barra para filtros-->
+            <div class="col-lg-3 d-none d-lg-block">
                 <div class="filter-sidebar">
-                    <h5 class="mb-3">Filtros</h5>
-                    Filtros de Categoria, Marca, Precio, etc. 
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-filter text-success me-2"></i>Filtros
+                        </h5>
+                        {% if query or selected_categories or selected_brands or min_price or max_price or filter_on_sale or filter_featured or filter_in_stock %}
+                        <a href="{% url 'products:lista_productos' %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="GET" action="{% url 'products:lista_productos' %}" id="filterForm">
+                        
+                        <!-- Mantener búsqueda si existe -->
+                        {% if query %}
+                        <input type="hidden" name="q" value="{{ query }}">
+                        {% endif %}
+                        
+                        <!-- Categorias -->
+
+                        <div class="filter-section mb-3">
+                            <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#categoriesCollapse">
+                                <span>
+                                    <i class="fas fa-tag text-success me-2"></i>
+                                    <strong>Categoría</strong>
+                                    {% if selected_categories %}
+                                    <span class="badge bg-success ms-2">{{ selected_categories|length }}</span>
+                                    {% endif %}
+                                </span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="collapse show" id="categoriesCollapse">
+                                <div class="filter-options mt-2">
+                                    {% for category in categories %}
+                                    <div class="form-check">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="category" 
+                                            id="cat{{ category.id }}"
+                                            value="{{ category.id }}"
+                                            {% if category.id|stringformat:"s" in selected_categories %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="cat{{ category.id }}">
+                                            {{ category.name }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Marcas -->
+
+                        <div class="filter-section mb-3">
+                            <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#brandsCollapse">
+                                <span>
+                                    <i class="fas fa-certificate text-success me-2"></i>
+                                    <strong>Marca</strong>
+                                    {% if selected_brands %}
+                                    <span class="badge bg-success ms-2">{{ selected_brands|length }}</span>
+                                    {% endif %}
+                                </span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="collapse" id="brandsCollapse">
+                                <div class="filter-options mt-2">
+                                    {% for brand in brands %}
+                                    <div class="form-check">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="brand" 
+                                            id="brand{{ brand.id }}"
+                                            value="{{ brand.id }}"
+                                            {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="brand{{ brand.id }}">
+                                            {{ brand.name }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Precio -->
+
+                        <div class="filter-section mb-3">
+                            <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#priceCollapse">
+                                <span>
+                                    <i class="fas fa-dollar-sign text-success me-2"></i>
+                                    <strong>Precio</strong>
+                                </span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="collapse" id="priceCollapse">
+                                <div class="mt-2">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input 
+                                                type="number" 
+                                                name="min_price" 
+                                                class="form-control form-control-sm" 
+                                                placeholder="Mín"
+                                                value="{{ min_price }}"
+                                                min="0">
+                                        </div>
+                                        <div class="col-6">
+                                            <input 
+                                                type="number" 
+                                                name="max_price" 
+                                                class="form-control form-control-sm" 
+                                                placeholder="Máx"
+                                                value="{{ max_price }}"
+                                                min="0">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-sm w-100 mt-2">
+                                        Aplicar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Opciones Especiales-->
+
+                        <div class="filter-section mb-3">
+                            <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse">
+                                <span>
+                                    <i class="fas fa-star text-success me-2"></i>
+                                    <strong>Opciones</strong>
+                                </span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="collapse" id="optionsCollapse">
+                                <div class="mt-2">
+                                    <div class="form-check form-switch mb-2">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="on_sale" 
+                                            id="onSale"
+                                            value="1"
+                                            {% if filter_on_sale %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="onSale">
+                                            En oferta
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="featured" 
+                                            id="featured"
+                                            value="1"
+                                            {% if filter_featured %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="featured">
+                                            Destacados
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="in_stock" 
+                                            id="inStock"
+                                            value="1"
+                                            {% if filter_in_stock %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="inStock">
+                                            Con stock
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </form>
                 </div>
-            </div> -->  
-            
+            </div>
+
             <!-- Productos Grid -->
-            <div class="col-lg-12">
+
+            <div class="col-lg-9 col-12">
                 
-                <!-- Contrador y Ordenar -->
+                <!-- Filtros activos -->
+
+                {% if query or selected_category or selected_brand or min_price or max_price or filter_on_sale or filter_featured or filter_in_stock %}
+                <div class="active-filters mb-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <span class="text-muted me-2">
+                            <i class="fas fa-filter"></i> Filtros activos:
+                        </span>
+                        
+                        {% if query %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-search me-1"></i>
+                            "{{ query }}"
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="text-white text-decoration-none ms-1">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if selected_category %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-tag me-1"></i>
+                            Categoría seleccionada
+                            <a href="?{% if query %}q={{ query }}&{% endif %}{% for key, value in request.GET.items %}{% if key != 'category' and key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="text-white text-decoration-none ms-1">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if selected_brand %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-certificate me-1"></i>
+                            Marca seleccionada
+                            <a href="?{% if query %}q={{ query }}&{% endif %}{% for key, value in request.GET.items %}{% if key != 'brand' and key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="text-white text-decoration-none ms-1">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if min_price %}
+                        <span class="badge bg-success">
+                            Precio mín: ${{ min_price }}
+                            <a href="?{% if query %}q={{ query }}&{% endif %}{% for key, value in request.GET.items %}{% if key != 'min_price' and key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="text-white text-decoration-none ms-1">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if max_price %}
+                        <span class="badge bg-success">
+                            Precio máx: ${{ max_price }}
+                            <a href="?{% if query %}q={{ query }}&{% endif %}{% for key, value in request.GET.items %}{% if key != 'max_price' and key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="text-white text-decoration-none ms-1">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if filter_on_sale %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-percent me-1"></i>
+                            En oferta
+                            <a href="?{% if query %}q={{ query }}&{% endif %}{% for key, value in request.GET.items %}{% if key != 'on_sale' and key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="text-white text-decoration-none ms-1">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if filter_featured %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-star me-1"></i>
+                            Destacados
+                            <a href="?{% if query %}q={{ query }}&{% endif %}{% for key, value in request.GET.items %}{% if key != 'featured' and key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="text-white text-decoration-none ms-1">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if filter_in_stock %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Con stock
+                            <a href="?{% if query %}q={{ query }}&{% endif %}{% for key, value in request.GET.items %}{% if key != 'in_stock' and key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="text-white text-decoration-none ms-1">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        <a href="{% url 'products:lista_productos' %}" class="btn btn-sm btn-outline-danger ms-2">
+                            <i class="fas fa-times me-1"></i> Limpiar todos
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                
+                <!-- Contador y Ordenar -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <p class="text-muted mb-0">
-                        <strong>{{ products.count }}</strong> producto{{ products.count|pluralize }} encontrado{{ products.count|pluralize }}
+                        <strong>{{ total_results }}</strong> producto{{ total_results|pluralize }} encontrado{{ total_results|pluralize }}
+                        {% if query %}
+                            para <strong>"{{ query }}"</strong>
+                        {% endif %}
                     </p>
                     
                     <!-- Ordenar -->
@@ -86,9 +367,9 @@
 
                 <!-- Grid de Productos -->
                 {% if products %}
-                <div class="row g-4">
+                <div class="row g-3 g-lg-4">
                     {% for product in products %}
-                        <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="col-6 col-md-4 col-lg-3">
                             <div class="product-card" data-href="{% url 'products:detalle_producto' product.pk %}">
                                 <!-- Badges -->
                                 {% if product.sale_price %}
@@ -123,7 +404,7 @@
                                     <h5 class="product-title">{{ product.name }}</h5>      
 
                                     <!-- Categoria y Marca -->
-                                    <div class="product-meta mb-2">
+                                    <div class="product-meta mb-2 d-none d-lg-block">
                                         {% if product.category %}
                                             <span class="badge bg-light text-dark">{{ product.category.name }}</span>
                                         {% endif %}
@@ -173,9 +454,11 @@
 
                                     <!-- Añadir al carrito -->
                                     {% if product.stock > 0 %}
-                                        <a href="{% url 'products:add_to_cart' product.pk %}" class="btn btn-success btn-sm w-100 add-to-cart-btn">
-                                            <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
-                                        </a>
+                                    <a href="{% url 'products:add_to_cart' product.pk %}" class="btn btn-success btn-sm w-100 add-to-cart-btn">
+                                        <i class="fas fa-cart-plus me-1 d-none d-lg-inline"></i>
+                                        <span class="d-none d-lg-inline">Agregar</span>
+                                        <i class="fas fa-cart-plus d-lg-none"></i>
+                                    </a>
                                     {% else %}
                                         <button class="btn btn-secondary btn-sm w-100" disabled>
                                             No Disponible
@@ -186,8 +469,81 @@
                         </div>
                     {% endfor %}
                 </div>
+                
+                <!-- Paginación -->
+                {% if products.has_other_pages %}
+                <nav aria-label="Navegación de páginas" class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        
+                        <!-- Botón Primera Página -->
+                        {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- Botón Anterior -->
+                        {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- Página Actual -->
+                        <li class="page-item active">
+                            <span class="page-link bg-success border-success">
+                                {{ products.number }} de {{ paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        <!-- Botón Siguiente -->
+                        {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- Botón Última Página -->
+                        {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link  "><i class="fas fa-angle-double-right"></i></span>
+                        </li>
+                        {% endif %}
+                        
+                    </ul>
+                    
+                    <!-- Info de página -->
+                    <p class="text-center text-muted mt-3">
+                        Mostrando {{ products.start_index }}-{{ products.end_index }} de {{ total_results }} productos
+                    </p>
+                </nav>
+                {% endif %}
+                
                 {% else %}
-
                 <!-- Pagina vacia -->
                 <div class="empty-state text-center py-5">
                     <i class="fas fa-box-open fa-5x text-muted mb-4"></i>
@@ -207,6 +563,203 @@
 </section>
 
 {% endblock %}
+
+
+
+{% block modals %}
+<!-- Modal de filtros para móvil -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel">
+                    <i class="fas fa-filter text-success me-2"></i>Filtros
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="GET" action="{% url 'products:lista_productos' %}" id="filterFormMobile">
+                    
+                    {% if query %}
+                    <input type="hidden" name="q" value="{{ query }}">
+                    {% endif %}
+                    
+                    <!-- Categorías -->
+                    <div class="filter-section mb-3">
+                        <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#categoriesCollapseMobile">
+                            <span>
+                                <i class="fas fa-tag text-success me-2"></i>
+                                <strong>Categoría</strong>
+                                {% if selected_categories %}
+                                <span class="badge bg-success ms-2">{{ selected_categories|length }}</span>
+                                {% endif %}
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="collapse show" id="categoriesCollapseMobile">
+                            <div class="filter-options mt-2">
+                                {% for category in categories %}
+                                <div class="form-check">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="category" 
+                                        id="catMobile{{ category.id }}"
+                                        value="{{ category.id }}"
+                                        {% if category.id|stringformat:"s" in selected_categories %}checked{% endif %}>
+                                    <label class="form-check-label" for="catMobile{{ category.id }}">
+                                        {{ category.name }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Marcas -->
+                    <div class="filter-section mb-3">
+                        <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#brandsCollapseMobile">
+                            <span>
+                                <i class="fas fa-certificate text-success me-2"></i>
+                                <strong>Marca</strong>
+                                {% if selected_brands %}
+                                <span class="badge bg-success ms-2">{{ selected_brands|length }}</span>
+                                {% endif %}
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="collapse" id="brandsCollapseMobile">
+                            <div class="filter-options mt-2">
+                                {% for brand in brands %}
+                                <div class="form-check">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="brand" 
+                                        id="brandMobile{{ brand.id }}"
+                                        value="{{ brand.id }}"
+                                        {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}>
+                                    <label class="form-check-label" for="brandMobile{{ brand.id }}">
+                                        {{ brand.name }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Precio -->
+                    <div class="filter-section mb-3">
+                        <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#priceCollapseMobile">
+                            <span>
+                                <i class="fas fa-dollar-sign text-success me-2"></i>
+                                <strong>Precio</strong>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="collapse" id="priceCollapseMobile">
+                            <div class="mt-2">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input 
+                                            type="number" 
+                                            name="min_price" 
+                                            class="form-control form-control-sm" 
+                                            placeholder="Mín"
+                                            value="{{ min_price }}"
+                                            min="0">
+                                    </div>
+                                    <div class="col-6">
+                                        <input 
+                                            type="number" 
+                                            name="max_price" 
+                                            class="form-control form-control-sm" 
+                                            placeholder="Máx"
+                                            value="{{ max_price }}"
+                                            min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Opciones Especiales -->
+                    <div class="filter-section mb-3">
+                        <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapseMobile">
+                            <span>
+                                <i class="fas fa-star text-success me-2"></i>
+                                <strong>Opciones</strong>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="collapse" id="optionsCollapseMobile">
+                            <div class="mt-2">
+                                <div class="form-check form-switch mb-2">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="on_sale" 
+                                        id="onSaleMobile"
+                                        value="1"
+                                        {% if filter_on_sale %}checked{% endif %}>
+                                    <label class="form-check-label" for="onSaleMobile">
+                                        En oferta
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-2">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="featured" 
+                                        id="featuredMobile"
+                                        value="1"
+                                        {% if filter_featured %}checked{% endif %}>
+                                    <label class="form-check-label" for="featuredMobile">
+                                        Destacados
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check form-switch">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="in_stock" 
+                                        id="inStockMobile"
+                                        value="1"
+                                        {% if filter_in_stock %}checked{% endif %}>
+                                    <label class="form-check-label" for="inStockMobile">
+                                        Con stock
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                {% if selected_categories or selected_brands or min_price or max_price or filter_on_sale or filter_featured or filter_in_stock %}
+                <a href="{% url 'products:lista_productos' %}" class="btn btn-outline-danger">
+                    <i class="fas fa-times me-1"></i>Limpiar
+                </a>
+                {% endif %}
+                <button type="submit" form="filterFormMobile" class="btn btn-success" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i>Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 
 {% block extra_js %}
 <script src="{% static 'js/products.js' %}"></script>
