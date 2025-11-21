@@ -101,6 +101,9 @@
     flex-wrap: wrap;
 }
 
+/* ================================= */
+
+
 /* Dropdown Ordenar */
 .dropdown-item.active {
     background-color: #59ab6e;
@@ -119,9 +122,8 @@
     width: 20px;
 }
 
-/* Sidebar de Filtros */
+/* ================================= */
 
-/* static/css/products.css - AGREGAR AL FINAL */
 
 /* Sidebar de Filtros */
 .filter-sidebar {
@@ -193,7 +195,91 @@
 }
 
 
+/* Checkboxes personalizados en filtros */
+.filter-options .form-check {
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+    padding-left: 0.75rem;
+}
+
+.filter-options .form-check:hover {
+    background-color: #f8f9fa;
+}
+
+.filter-options .form-check-input {
+    width: 1.5em;
+    height: 1.5em;
+    border: 2px solid #59ab6e;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.filter-options .form-check-input:checked {
+    background-color: #59ab6e;
+    border-color: #59ab6e;
+}
+
+.filter-options .form-check-input:focus {
+    border-color: #59ab6e;
+    box-shadow: 0 0 0 0.25rem rgba(89, 171, 110, 0.25);
+}
+
+.filter-options .form-check-label {
+    cursor: pointer;
+    user-select: none;
+    padding-left: 0.75rem;
+    transition: color 0.2s ease, font-weight 0.2s ease;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.filter-options .form-check-input:checked + .form-check-label {
+    color: #59ab6e;
+    font-weight: 600;
+}
+
+/* Opciones Especiales en Sidebar */
+
+.form-check-input[type="checkbox"].form-check-input {
+    margin-left: 0 !important;
+}
+
+.form-check.form-switch {
+    padding-left: 0.75rem !important;
+    min-height: auto;
+}
+
+.form-check.form-switch .form-check-input {
+    width: 2.5em !important;
+    height: 1.5em;
+    margin-left: 0 !important;
+    margin-right: 0.75rem;
+}
+
+.form-check.form-switch .form-check-input:checked {
+    background-color: #59ab6e;
+    border-color: #59ab6e;
+}
+
+.form-check.form-switch .form-check-input:focus {
+    border-color: #59ab6e;
+    box-shadow: 0 0 0 0.25rem rgba(89, 171, 110, 0.25);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+.form-check.form-switch .form-check-label {
+    padding-left: 0;
+}
+
+/* ================================= */
+
 /* Paginación */
+
 .pagination .page-link {
     color: #59ab6e;
 }
@@ -226,11 +312,9 @@
     padding: 4rem 2rem;
 }
 
-/*  */
-/* Detalle de Producto */
-/*  */
+/* ================================= */
 
-/* Product Detail Styles */
+/* Detalle de Producto */
 
 .product-detail-image {
     position: relative;
@@ -330,8 +414,10 @@
     font-size: 1.5rem;
 }
 
+/* ================================= */
 
 /*  Link Card de Producto  */
+
 .product-card-link {
     text-decoration: none;
     color: inherit;
@@ -351,6 +437,7 @@
 }
 
 /* Evitar que los botones internos cambien el cursor */
+
 .product-card .btn {
     position: relative;
     z-index: 10;
@@ -361,9 +448,51 @@
 }
 
 
+/* ================================= */
 
 /* Media Queries */
 @media (max-width: 768px) {
+
+    #hero-banner h1 {
+        font-size: 2.5rem;
+    }
+    
+    .hero-image {
+        max-height: 300px;
+    }
+    
+    .product-image {
+        height: 200px;
+    }
+    
+    .category-card {
+        margin-bottom: 1rem;
+    }
+
+    /* ================================= */
+
+    /* ¿Por Qué Elegirnos? */
+
+    .feature-box {
+        padding: 1rem 0.5rem;
+    }
+    
+    .feature-icon i {
+        font-size: 2rem !important;
+    }
+    
+    .feature-box h5 {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .feature-box p {
+        font-size: 0.7rem;
+        margin-bottom: 0;
+    }
+
+    /* ================================= */
+
     .product-image {
         height: 200px;
     }

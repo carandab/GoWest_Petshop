@@ -236,30 +236,57 @@ def product_confirm_delete(request, pk):
 
 # ==============================================
 
-# Barra de búsqueda
+def category_list(request):
 
-""" def product_search(request):
-    # Obtener parámetro de búsqueda
-    query = request.GET.get('q', '').strip()
-    products = Product.objects.none()  # QuerySet vacío por defecto
+    categories = Category.objects.filter(is_active=True).annotate(
+        product_count=models.Count('products', filter=models.Q(products__is_active=True))
+    )
     
-    if query:
-        # Búsqueda en múltiples campos
-        products = Product.objects.filter(
-            is_active=True
-        ).filter(
-            models.Q(name__icontains=query) |
-            models.Q(description__icontains=query) |
-            models.Q(category__name__icontains=query) |
-            models.Q(brand__name__icontains=query) |
-            models.Q(sku__icontains=query)
-        ).select_related('category', 'brand').distinct()
-        
-        # Mensaje si no hay resultados
-        if not products.exists():
-            messages.info(request, f'No se encontraron productos para "{query}"')
+    return render(request, 'products/category_list.html', {
+        'categories': categories
+    })
+
+
+def category_detail(request, slug):
+
+    category = get_object_or_404(Category, slug=slug, is_active=True)
     
-    # Aplicar ordenamiento si se especifica
+    # Obtener productos de la categoría
+    products = Product.objects.filter(
+        category=category,
+        is_active=True
+    ).select_related('brand')
+    
+    # Filtros
+    # Marcas disponibles en esta categoría
+    brands = Brand.objects.filter(
+        products__category=category,
+        products__is_active=True,
+        is_active=True
+    ).distinct()
+    
+    # Filtro: Marca
+    brand_ids = request.GET.getlist('brand')
+    if brand_ids:
+        products = products.filter(brand_id__in=brand_ids)
+    
+    # Filtro: Precio
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+    
+    # Filtro: Opciones especiales
+    if request.GET.get('on_sale') == '1':
+        products = products.filter(sale_price__isnull=False)
+    if request.GET.get('featured') == '1':
+        products = products.filter(is_featured=True)
+    if request.GET.get('in_stock') == '1':
+        products = products.filter(stock__gt=0)
+    
+    # Sorting
     sort = request.GET.get('sort', 'name')
     if sort == 'price_low':
         products = products.order_by('price')
@@ -270,15 +297,45 @@ def product_confirm_delete(request, pk):
     elif sort == 'newest':
         products = products.order_by('-created_at')
     
-    return render(request, 'products/product_search.html', {
-        'products': products,
-        'query': query,
+    # Paginación
+    paginator = Paginator(products, 12)
+    page = request.GET.get('page')
+    
+    try:
+        products_page = paginator.page(page)
+    except PageNotAnInteger:
+        products_page = paginator.page(1)
+    except EmptyPage:
+        products_page = paginator.page(paginator.num_pages)
+    
+    # Calcular rango de precios para esta categoría
+    price_range = Product.objects.filter(
+        category=category,
+        is_active=True
+    ).aggregate(
+        min_price=models.Min('price'),
+        max_price=models.Max('price')
+    )
+    
+    context = {
+        'category': category,
+        'products': products_page,
+        'brands': brands,
+        'price_range': price_range,
         'current_sort': sort,
-        'total_results': products.count()
-    })
- """
-
-
+        'total_results': paginator.count,
+        'paginator': paginator,
+        
+        # Filtros activos
+        'selected_brands': brand_ids,
+        'min_price': min_price,
+        'max_price': max_price,
+        'filter_on_sale': request.GET.get('on_sale'),
+        'filter_featured': request.GET.get('featured'),
+        'filter_in_stock': request.GET.get('in_stock'),
+    }
+    
+    return render(request, 'products/category_detail.html', context)
 
 # ==============================================
 

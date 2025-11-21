@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load price_filters %}
+
+{% block title %}GoWest | {{ category.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-tag text-success me-2"></i>
+                    {{ category.name }}
+                </h1>
+                {% if category.description %}
+                <p class="lead text-muted mb-3">{{ category.description }}</p>
+                {% endif %}
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'products:index' %}">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'products:lista_categorias' %}">Categorías</a></li>
+                        <li class="breadcrumb-item active">{{ category.name }}</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'products:lista_categorias' %}" class="btn btn-outline-success">
+                    <i class="fas fa-th-large me-2"></i>Ver Todas las Categorías
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sección de Productos -->
+<section class="py-5">
+    <div class="container-fluid">
+        <div class="row mx-lg-5 mx-2">
+
+            <!-- Botón Filtros (Móvil) -->
+            <div class="col-12 mb-3 d-lg-none">
+                <button class="btn btn-outline-success w-100" type="button" data-bs-toggle="modal" data-bs-target="#filterModal">
+                    <i class="fas fa-filter me-2"></i>Filtros
+                    {% if selected_brands or min_price or max_price or filter_on_sale or filter_featured or filter_in_stock %}
+                    <span class="badge bg-success ms-2">Activos</span>
+                    {% endif %}
+                </button>
+            </div>
+            
+            <!-- Sidebar de Filtros (Desktop) -->
+            <div class="col-lg-3 d-none d-lg-block">
+                <div class="filter-sidebar">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-filter text-success me-2"></i>Filtros
+                        </h5>
+                        {% if selected_brands or min_price or max_price or filter_on_sale or filter_featured or filter_in_stock %}
+                        <a href="{% url 'products:detalle_categoria' category.slug %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="GET" id="filterForm">
+                        
+                        <!-- Marcas -->
+                        {% if brands %}
+                        <div class="filter-section mb-3">
+                            <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#brandsCollapse">
+                                <span>
+                                    <i class="fas fa-certificate text-success me-2"></i>
+                                    <strong>Marca</strong>
+                                    {% if selected_brands %}
+                                    <span class="badge bg-success ms-2">{{ selected_brands|length }}</span>
+                                    {% endif %}
+                                </span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="collapse show" id="brandsCollapse">
+                                <div class="filter-options mt-2">
+                                    {% for brand in brands %}
+                                    <div class="form-check">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="brand" 
+                                            id="brand{{ brand.id }}"
+                                            value="{{ brand.id }}"
+                                            {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="brand{{ brand.id }}">
+                                            {{ brand.name }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        {% endif %}
+                        
+                        <!-- Precio -->
+                        <div class="filter-section mb-3">
+                            <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#priceCollapse">
+                                <span>
+                                    <i class="fas fa-dollar-sign text-success me-2"></i>
+                                    <strong>Precio</strong>
+                                </span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="collapse show" id="priceCollapse">
+                                <div class="mt-2">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input 
+                                                type="number" 
+                                                name="min_price" 
+                                                class="form-control form-control-sm" 
+                                                placeholder="Mín"
+                                                value="{{ min_price }}"
+                                                min="0">
+                                        </div>
+                                        <div class="col-6">
+                                            <input 
+                                                type="number" 
+                                                name="max_price" 
+                                                class="form-control form-control-sm" 
+                                                placeholder="Máx"
+                                                value="{{ max_price }}"
+                                                min="0">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-sm w-100 mt-2">
+                                        Aplicar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Opciones Especiales -->
+                        <div class="filter-section mb-3">
+                            <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse">
+                                <span>
+                                    <i class="fas fa-star text-success me-2"></i>
+                                    <strong>Opciones</strong>
+                                </span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="collapse show" id="optionsCollapse">
+                                <div class="mt-2">
+                                    <div class="form-check form-switch mb-2">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="on_sale" 
+                                            id="onSale"
+                                            value="1"
+                                            {% if filter_on_sale %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="onSale">
+                                            En oferta
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="featured" 
+                                            id="featured"
+                                            value="1"
+                                            {% if filter_featured %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="featured">
+                                            Destacados
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            name="in_stock" 
+                                            id="inStock"
+                                            value="1"
+                                            {% if filter_in_stock %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="inStock">
+                                            Con stock
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+
+            <!-- Grid de Productos -->
+            <div class="col-lg-9 col-12">
+                
+                <!-- Contador y Ordenar -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <p class="text-muted mb-0">
+                        <strong>{{ total_results }}</strong> producto{{ total_results|pluralize }} en {{ category.name }}
+                    </p>
+                    
+                    <!-- Ordenar -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
+                            Ordenar por
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item {% if current_sort == 'name' %}active{% endif %}" href="?sort=name">Nombre (A-Z)</a></li>
+                            <li><a class="dropdown-item {% if current_sort == 'newest' %}active{% endif %}" href="?sort=newest">Más Recientes</a></li>
+                            <li><a class="dropdown-item {% if current_sort == 'price_low' %}active{% endif %}" href="?sort=price_low">Precio: Menor a Mayor</a></li>
+                            <li><a class="dropdown-item {% if current_sort == 'price_high' %}active{% endif %}" href="?sort=price_high">Precio: Mayor a Menor</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Grid de Productos (igual que product_list.html) -->
+                {% if products %}
+                <div class="row g-3 g-lg-4">
+                    {% for product in products %}
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="product-card" data-href="{% url 'products:detalle_producto' product.pk %}">
+                            <!-- Badge -->
+                            {% if product.sale_price %}
+                                <span class="product-badge bg-danger">¡Oferta!</span>
+                            {% elif product.is_featured %}
+                                <span class="product-badge bg-success">Destacado</span>
+                            {% endif %}
+                            
+                            <!-- Imagen -->
+                            <div class="product-image">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid">
+                                {% else %}
+                                    <img src="{% static 'images/placeholder.png' %}" alt="{{ product.name }}" class="img-fluid">
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Info -->
+                            <div class="product-info p-3">
+                                <h5 class="product-title">{{ product.name }}</h5>
+                                
+                                {% if product.brand %}
+                                <div class="product-meta mb-2 d-none d-lg-block">
+                                    <span class="badge bg-light text-dark">{{ product.brand.name }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Precio -->
+                                <div class="product-price mb-3">
+                                    {% if product.sale_price %}
+                                        <span class="text-muted text-decoration-line-through small">{{ product.price|precio_clp }}</span>
+                                        <span class="text-success fw-bold fs-5 ms-2">{{ product.sale_price|precio_clp }}</span>
+                                    {% else %}
+                                        <span class="text-success fw-bold fs-5">{{ product.price|precio_clp }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Stock -->
+                                <div class="mb-2">
+                                    {% if product.stock > 0 %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Disponible
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times"></i> Agotado
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Botón -->
+                                {% if product.stock > 0 %}
+                                <a href="{% url 'products:add_to_cart' product.pk %}" class="btn btn-success btn-sm w-100 add-to-cart-btn">
+                                    <i class="fas fa-cart-plus me-1 d-none d-lg-inline"></i>
+                                    <span class="d-none d-lg-inline">Agregar</span>
+                                    <i class="fas fa-cart-plus d-lg-none"></i>
+                                </a>
+                                {% else %}
+                                    <button class="btn btn-secondary btn-sm w-100" disabled>No Disponible</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Paginación (igual que product_list.html) -->
+                {% if products.has_other_pages %}
+                <nav aria-label="Navegación de páginas" class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if selected_brands %}&brand={{ selected_brands|join:'&brand=' }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link bg-success border-success">
+                                {{ products.number }} de {{ paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}{% if selected_brands %}&brand={{ selected_brands|join:'&brand=' }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <p class="text-center text-muted mt-3">
+                        Mostrando {{ products.start_index }}-{{ products.end_index }} de {{ total_results }} productos
+                    </p>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                <!-- Sin Productos -->
+                <div class="empty-state text-center py-5">
+                    <i class="fas fa-box-open fa-5x text-muted mb-4"></i>
+                    <h3 class="mb-3">No hay productos en esta categoría</h3>
+                    <p class="text-muted">Por el momento no hay productos disponibles en {{ category.name }}.</p>
+                    <a href="{% url 'products:lista_categorias' %}" class="btn btn-success mt-3">
+                        <i class="fas fa-th-large me-2"></i>Ver Otras Categorías
+                    </a>
+                </div>
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/products.js' %}"></script>
+{% endblock %}
