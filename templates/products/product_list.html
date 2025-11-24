@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load price_filters %}
+{% load url_filters %}
 
 {% block title %}GoWest | Productos{% endblock %}
 
@@ -344,20 +345,20 @@
                         <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">Ordenar por</button>
                         <ul class="dropdown-menu" aria-labelledby="sortDropdown">
                             <li>
-                                <a class="dropdown-item {% if current_sort == 'name' %}active{% endif %}" href="?sort=name">Nombre (A-Z)</a>
+                                <a class="dropdown-item {% if current_sort == 'name' %}active{% endif %}" href="?{% url_replace sort='name' %}">Nombre (A-Z)</a>
                             </li>
                             <li>
-                                <a class="dropdown-item {% if current_sort == 'newest' %}active{% endif %}" href="?sort=newest">
+                                <a class="dropdown-item {% if current_sort == 'newest' %}active{% endif %}" href="?{% url_replace sort='newest' %}">
                                     <i class="fas fa-clock me-2"></i>Más Recientes
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item {% if current_sort == 'price_low' %}active{% endif %}" href="?sort=price_low">
+                                <a class="dropdown-item {% if current_sort == 'price_low' %}active{% endif %}" href="?{% url_replace sort='price_low' %}">
                                     <i class="fas fa-arrow-down me-2"></i>Precio: Menor a Mayor
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item {% if current_sort == 'price_high' %}active{% endif %}" href="?sort=price_high">
+                                <a class="dropdown-item {% if current_sort == 'price_high' %}active{% endif %}" href="?{% url_replace sort='price_high' %}">
                                     <i class="fas fa-arrow-up me-2"></i>Precio: Mayor a Menor
                                 </a>
                             </li>
@@ -470,7 +471,7 @@
                     {% endfor %}
                 </div>
                 
-                <!-- Paginación -->
+                <!-- Paginación - ACTUALIZADO con url_replace -->
                 {% if products.has_other_pages %}
                 <nav aria-label="Navegación de páginas" class="mt-5">
                     <ul class="pagination justify-content-center">
@@ -478,7 +479,7 @@
                         <!-- Botón Primera Página -->
                         {% if products.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                            <a class="page-link" href="?{% url_replace page=1 %}">
                                 <i class="fas fa-angle-double-left"></i>
                             </a>
                         </li>
@@ -491,7 +492,7 @@
                         <!-- Botón Anterior -->
                         {% if products.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                            <a class="page-link" href="?{% url_replace page=products.previous_page_number %}">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         </li>
@@ -511,7 +512,7 @@
                         <!-- Botón Siguiente -->
                         {% if products.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ products.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                            <a class="page-link" href="?{% url_replace page=products.next_page_number %}">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>
@@ -524,13 +525,13 @@
                         <!-- Botón Última Página -->
                         {% if products.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                            <a class="page-link" href="?{% url_replace page=paginator.num_pages %}">
                                 <i class="fas fa-angle-double-right"></i>
                             </a>
                         </li>
                         {% else %}
                         <li class="page-item disabled">
-                            <span class="page-link  "><i class="fas fa-angle-double-right"></i></span>
+                            <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
                         </li>
                         {% endif %}
                         

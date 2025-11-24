@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load price_filters %}
+{% load url_filters %}  {# ← NUEVO: Cargar custom template tags #}
 
 {% block title %}GoWest | {{ category.name }}{% endblock %}
 
@@ -215,21 +216,21 @@
                         <strong>{{ total_results }}</strong> producto{{ total_results|pluralize }} en {{ category.name }}
                     </p>
                     
-                    <!-- Ordenar -->
+                    <!-- Ordenar - ACTUALIZADO con url_replace -->
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
                             Ordenar por
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item {% if current_sort == 'name' %}active{% endif %}" href="?sort=name">Nombre (A-Z)</a></li>
-                            <li><a class="dropdown-item {% if current_sort == 'newest' %}active{% endif %}" href="?sort=newest">Más Recientes</a></li>
-                            <li><a class="dropdown-item {% if current_sort == 'price_low' %}active{% endif %}" href="?sort=price_low">Precio: Menor a Mayor</a></li>
-                            <li><a class="dropdown-item {% if current_sort == 'price_high' %}active{% endif %}" href="?sort=price_high">Precio: Mayor a Menor</a></li>
+                            <li><a class="dropdown-item {% if current_sort == 'name' %}active{% endif %}" href="?{% url_replace sort='name' %}">Nombre (A-Z)</a></li>
+                            <li><a class="dropdown-item {% if current_sort == 'newest' %}active{% endif %}" href="?{% url_replace sort='newest' %}">Más Recientes</a></li>
+                            <li><a class="dropdown-item {% if current_sort == 'price_low' %}active{% endif %}" href="?{% url_replace sort='price_low' %}">Precio: Menor a Mayor</a></li>
+                            <li><a class="dropdown-item {% if current_sort == 'price_high' %}active{% endif %}" href="?{% url_replace sort='price_high' %}">Precio: Mayor a Menor</a></li>
                         </ul>
                     </div>
                 </div>
 
-                <!-- Grid de Productos (igual que product_list.html) -->
+                <!-- Grid de Productos -->
                 {% if products %}
                 <div class="row g-3 g-lg-4">
                     {% for product in products %}
@@ -300,31 +301,70 @@
                     {% endfor %}
                 </div>
                 
-                <!-- Paginación (igual que product_list.html) -->
+                <!-- Paginación - ACTUALIZADO con url_replace -->
                 {% if products.has_other_pages %}
                 <nav aria-label="Navegación de páginas" class="mt-5">
                     <ul class="pagination justify-content-center">
+                        
+                        <!-- Botón Primera Página -->
                         {% if products.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if selected_brands %}&brand={{ selected_brands|join:'&brand=' }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
-                                <i class="fas fa-chevron-left"></i>
+                            <a class="page-link" href="?{% url_replace page=1 %}">
+                                <i class="fas fa-angle-double-left"></i>
                             </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
                         </li>
                         {% endif %}
                         
+                        <!-- Botón Anterior -->
+                        {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% url_replace page=products.previous_page_number %}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- Página Actual -->
                         <li class="page-item active">
                             <span class="page-link bg-success border-success">
                                 {{ products.number }} de {{ paginator.num_pages }}
                             </span>
                         </li>
                         
+                        <!-- Botón Siguiente -->
                         {% if products.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ products.next_page_number }}{% if selected_brands %}&brand={{ selected_brands|join:'&brand=' }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if filter_on_sale %}&on_sale=1{% endif %}{% if filter_featured %}&featured=1{% endif %}{% if filter_in_stock %}&in_stock=1{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                            <a class="page-link" href="?{% url_replace page=products.next_page_number %}">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                        </li>
                         {% endif %}
+                        
+                        <!-- Botón Última Página -->
+                        {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% url_replace page=paginator.num_pages %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                        </li>
+                        {% endif %}
+                        
                     </ul>
                     
                     <p class="text-center text-muted mt-3">
@@ -350,6 +390,163 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block modals %}
+<!-- Modal de filtros para móvil -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel">
+                    <i class="fas fa-filter text-success me-2"></i>Filtros
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="GET" id="filterFormMobile">
+                    
+                    <!-- Marcas -->
+                    {% if brands %}
+                    <div class="filter-section mb-3">
+                        <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#brandsCollapseMobile">
+                            <span>
+                                <i class="fas fa-certificate text-success me-2"></i>
+                                <strong>Marca</strong>
+                                {% if selected_brands %}
+                                <span class="badge bg-success ms-2">{{ selected_brands|length }}</span>
+                                {% endif %}
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="collapse show" id="brandsCollapseMobile">
+                            <div class="filter-options mt-2">
+                                {% for brand in brands %}
+                                <div class="form-check">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="brand" 
+                                        id="brandMobile{{ brand.id }}"
+                                        value="{{ brand.id }}"
+                                        {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}>
+                                    <label class="form-check-label" for="brandMobile{{ brand.id }}">
+                                        {{ brand.name }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    {% endif %}
+                    
+                    <!-- Precio -->
+                    <div class="filter-section mb-3">
+                        <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#priceCollapseMobile">
+                            <span>
+                                <i class="fas fa-dollar-sign text-success me-2"></i>
+                                <strong>Precio</strong>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="collapse show" id="priceCollapseMobile">
+                            <div class="mt-2">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input 
+                                            type="number" 
+                                            name="min_price" 
+                                            class="form-control form-control-sm" 
+                                            placeholder="Mín"
+                                            value="{{ min_price }}"
+                                            min="0">
+                                    </div>
+                                    <div class="col-6">
+                                        <input 
+                                            type="number" 
+                                            name="max_price" 
+                                            class="form-control form-control-sm" 
+                                            placeholder="Máx"
+                                            value="{{ max_price }}"
+                                            min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Opciones Especiales -->
+                    <div class="filter-section mb-3">
+                        <button class="btn btn-light w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapseMobile">
+                            <span>
+                                <i class="fas fa-star text-success me-2"></i>
+                                <strong>Opciones</strong>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="collapse show" id="optionsCollapseMobile">
+                            <div class="mt-2">
+                                <div class="form-check form-switch mb-2">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="on_sale" 
+                                        id="onSaleMobile"
+                                        value="1"
+                                        {% if filter_on_sale %}checked{% endif %}>
+                                    <label class="form-check-label" for="onSaleMobile">
+                                        En oferta
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-2">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="featured" 
+                                        id="featuredMobile"
+                                        value="1"
+                                        {% if filter_featured %}checked{% endif %}>
+                                    <label class="form-check-label" for="featuredMobile">
+                                        Destacados
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check form-switch">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="in_stock" 
+                                        id="inStockMobile"
+                                        value="1"
+                                        {% if filter_in_stock %}checked{% endif %}>
+                                    <label class="form-check-label" for="inStockMobile">
+                                        Con stock
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                {% if selected_brands or min_price or max_price or filter_on_sale or filter_featured or filter_in_stock %}
+                <a href="{% url 'products:detalle_categoria' category.slug %}" class="btn btn-outline-danger">
+                    <i class="fas fa-times me-1"></i>Limpiar
+                </a>
+                {% endif %}
+                <button type="submit" form="filterFormMobile" class="btn btn-success" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i>Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}

@@ -86,7 +86,7 @@ class Product(models.Model):
         verbose_name='Categoría',
         related_name='products',
 
-        # Para desarrollo / En producción cambiar a default=funcion o volor por defecto
+        # Para desarrollo / En producción cambiar a default=funcion o valor por defecto
         blank=True,
         null=True 
         )
@@ -97,7 +97,7 @@ class Product(models.Model):
         related_name='products',
         verbose_name='Marca',
 
-        # Para desarrollo / En producción cambiar a default=funcion o volor por defecto
+        # Para desarrollo / En producción cambiar a default=funcion o valor por defecto
         blank=True,
         null=True
         )

@@ -156,6 +156,27 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Implementación de breadcrumbs
 - Modal de filtros para móvil
 
+#### Template Tags
+- Nuevo template tag `url_replace` en `products/templatetags/url_filters.py`
+  - Preserva automáticamente todos los parámetros GET
+  - Reutilizable en cualquier template
+  - Simplifica el código de paginación de ~200 a ~40 caracteres por enlace
+
+### 🐛 Correcciones
+
+#### Preservación de Filtros en Paginación
+- **Problema resuelto:** Los filtros se reseteaban al cambiar de página
+- **Solución implementada:**
+  - Creación de template tag personalizado `url_replace`
+  - Actualización de enlaces de paginación en `product_list.html`
+  - Actualización de enlaces de paginación en `category_detail.html`
+  - Actualización de dropdown de ordenamiento para preservar filtros
+- Los filtros ahora se mantienen al:
+  - Navegar entre páginas
+  - Cambiar el orden de productos
+  - Combinar múltiples filtros
+- Mejora significativa en la experiencia de usuario
+
 ### 📚 Documentación
 
 - README.md actualizado con nueva estructura del proyecto
